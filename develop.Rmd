@@ -1,0 +1,126 @@
+---
+title: "develop"
+output: pdf_document
+---
+
+```{r setup, echo = FALSE, message=FALSE, warning=FALSE}
+library(here)
+library(tidyverse)
+library(ggpubr)
+library(wesanderson)
+library(haven)
+
+source(here("R", "data.R"))
+```
+
+
+```{r data}
+year <- 2019
+
+file_name <- here("data", paste0("OxIS ", year, " public.sav"))
+data <- read_sav(file_name)
+
+questions <- lapply(data, function(ques){
+  attr(ques, "label")
+})
+answers <- lapply(data, function(ques){
+  attr(ques, "labels")
+})
+
+variables <- read_csv(here("data", "variables.csv"))[, 1:2]
+names(variables) <- c("Q_ID", "value_type")
+variables$Q_ID <- str_replace_all(variables$Q_ID, "\\. ", "_")
+variables$Q_ID <- str_replace_all(variables$Q_ID, " ", "_")
+variables$Q_ID <- str_replace_all(variables$Q_ID, "\\.", "_")
+
+selected_ques_indeces <- sapply(names(questions), function(Q_ID){
+  any(sapply(variables$Q_ID, function(selected){
+    grepl(paste0("^", selected), Q_ID, ignore.case = T)
+  }))
+})
+selected_questions <- questions[selected_ques_indeces]
+
+unmatched_indeces <- !sapply(variables$Q_ID, function(selected){
+  any(sapply(names(questions), function(Q_ID){
+    grepl(paste0("^", selected), Q_ID, ignore.case = T)
+  }))
+})
+unmatched <- variables[unmatched_indeces, ]
+
+# write_csv(data.frame(ques = unlist(selected_questions)), here("data", paste0("selected_questions.csv")))
+
+demo_questions <- c("QD1_yrborn2", "QD2_gender", "QD14_ethnic",
+                    "QD4_adulthh", "QD5_childhh", "QD3_marstat",
+                    "QD16_disab", "QD18_urbrur",
+                    "QL2_Edntt", "QO1_Labfor", "QO4E_grader", "Q1_income")
+outcomes <- c("QR3_s_frpriv3", "QN1_u_concom", "QB1_agcred", "QB1_agprov", "QB1_agpdat",
+              "QC12.*", "QC41_u_ad", "QC43.*", "QC42_u_pprot")
+
+demo_data <- data[c(demo_questions, "weight")]
+write_csv(demo_data, here("data", "temp.csv"))
+demo_data <- read_csv(here("data", "temp.csv"))
+  
+```
+``` {r}
+demo_answers <- answers[demo_questions]
+names(demo_answers[["QD3_marstat"]])[c(4, 5)] <- c("Partner", "Divorced")
+names(demo_answers[["QD18_urbrur"]])[c(3:7)] <- c("Big city", "Suburbs", "Town", "Village", "Farm")
+names(demo_answers[["QL2_Edntt"]]) <- c("Primary school", "Secondary school", "Special school", "Sixth form college", "Technical college", "Further Education College", "Adult Community College", "University", "Other")
+names(demo_answers[["QO1_Labfor"]])[c(2, 3, 6, 7, 12)] <- c("Full time", "Part time", "Disabled", "Community service", "Housework")
+names(demo_answers[["Q1_income"]])[2:10] <- c("0-12.5", "12.5-20", "20-30", "30-40", "40-50", "50-60", "60-70", "70-80", "80+")
+
+demo_names <- c("Age", "Gender", "Ethnics", "#Household Adults", "#Household Children",
+                "Marital Status", "disabled?", "Place of Residence", "Education",
+                "Employment", "NRS Social Grade", "Household Yearly Income (£1000)")
+names(demo_names) <- demo_questions
+
+get_name <- function(values, Q_ID, percents){
+  sapply(1:length(values), function(ind){
+    value <- values[ind]
+    name <- if(is.na(value)){
+      "NA"
+    } else {
+      names(demo_answers[[Q_ID]])[demo_answers[[Q_ID]] == value]
+    }
+    if(length(name) == 0) name <- as.character(value)
+    if(percents[ind] < nchar(name)/2 || percents[ind] < 3) name <- ""
+    
+    return(name)
+  })
+}
+
+plot_distribution <- function(var_name){
+  var <- as.name(var_name)
+  plot_data <- demo_data %>%
+    select(!!var, weight) %>%
+    filter(!!var >= 0) %>%
+    group_by(!!var) %>%
+    summarise(mass = sum(weight)) %>%
+    mutate(percent = mass/sum(mass)*100) %>%
+    mutate(category = get_name(!!var, var_name, percent),
+           index = factor(!!var))
+  
+  plot <- ggplot(plot_data, aes(x = 1, y = percent, fill = index)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = paste0(category), y = percent), size = 2.5,
+              position = position_stack(vjust = 0.5)) +
+    scale_fill_brewer(palette = "Set3") +
+    coord_flip() +
+    theme_void() +
+    theme(legend.position = "none",
+          axis.title.y = element_text(size = ifelse(nchar(demo_names[var_name][var_name]) > 20, 7, 8))) +
+    labs(x = demo_names[var_name])
+  
+  return(plot)
+}
+
+plot_list <- lapply(demo_questions, function(var_name){
+  plot_distribution(var_name)
+})
+
+ggarrange(plotlist = plot_list,
+          ncol = 1, nrow = length(plot_list), align = "v")
+
+ggsave(here("figs", "demo.pdf"), height = 6, width = 9)
+
+```

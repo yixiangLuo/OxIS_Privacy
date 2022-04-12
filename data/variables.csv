@@ -1,0 +1,83 @@
+Question,Values Type,"Combine=1, separate=0 (""combine"" means I suggest keeping the questions as only one covariate and using the weighted average as the value )","Category(A=social economic status, B= Internet-related behaviors and attitudes , C= non Internet-related behaviors and attitudes )","Dependent Variable =1, Covariates=0","Notes (later, we may combine different covariates)"
+QA2,ordinal,0,B,0,Internet trust
+QA4,ordinal,0,B,0,Internet trust
+QA8,ordinal,NA,C,0,people trust
+QA9,ordinal,NA,B,0,Internet attitudes
+QB1,ordinal,0,B,"QB1_agcred=1, QB1_agprov=1, QB1_agpdata=1",privacy/technology attitudes
+QB2,binary,0,C,0,politics engagement
+QP7,ordinal,0,C,0,politics attitudes
+QI1,ordinal,1,B,0,technology attitudes
+QM1,binary,NA,B/A,0,Internet equipment
+QM2,binary,NA,B/A,0,Internet equipment
+QH7,binary,0,B/A,0,Internet equipment
+QH9,ordinal,NA,B/A,0,Internet equipment
+QH10,binary,NA,B,0,Internet frequency
+QH13,binary,NA,B,0,go online or not
+QC3,numerical,NA,B,0,Internet experience
+QC6,ordinal,NA,B,0,Internet ability
+QH6,ordinal,NA,B,0,Internet equipment
+QR1,binary,0,B,0,Internet engagement
+QR2,ordinal,1,B,0,Internet frequency
+QR3,ordinal,0,B,QR3_[u_frpriv3]=1,prvacy/Internet engagement
+QR4,ordinal,1*,B,0,social media attitudes
+QC8,ordinal,1,B,0,Internet frequency
+QC39.u_time,ordinal,NA,B,0,Internet frequency
+QC9,ordinal,1,B,0,Internet engagement(active)
+QC10,binary,1,B,0,Internet engagement(active)
+QS1 s_freq,ordinal,NA,B,0,Internet frequency
+QS2 s_wheng,categorical,NA,B,0,Internet engagement
+QS4 s_check,ordinal,NA,B,0,Internet ability
+QI9,ordinal,1,B,0,Internet ability
+QC11,ordinal,1,B,0,Internet frequency
+QC12,ordinal,0,NA,1,Privacy attitude
+QC40. u_fund,categorical,NA,B,0,Internet fund
+QC41. u_ad,ordinal,NA,NA,1,Privacy attitude
+QC21,ordinal,1,B,0,Internet frequency
+QC22,ordinal,1,B,0,Internet ability
+QC23,ordinal,1,B,0,Internet ability
+QC43,binary,0,NA,1,Privacy action
+QC42. U_pprot,ordinal,0,NA,1,Privacy action
+QC30,ordinal,1,B,0,Internet frequency
+QC33,ordinal,1,B,0,Internet frequency
+QN1,ordinal,0,B,QN1. u_concom=1,Privacy/Internet attitudes
+QN2,binary,1,B,0,Internet ability
+QN3,binary,1,B,0,Internet engagement (passive)
+QN4,binary,1,B,0,Internet engagement (active)
+QI2,ordinal,0,B,0,Internet attitudes
+QI8,ordinal,1,B,0,Internet attitudes
+QP1. P_int,ordinal,NA,C,0,Politics interest
+QP2. P_party,categorical,NA,C,0,politics attitudes
+QP3,categorical/binary,1,C,0,politics engagement
+QP4,ordinal,0,C,0,politics attitudes
+QP5,ordinal,1,C,0,politics ability
+QP6,ordinal,0,C,0,politics attitudes
+QL1,ordinal,NA,A,0,education
+QL2. Edntt,ordinal,NA,A,0,education
+QO1,ordinal,NA,A,0,labor
+QO2,binary,NA,A,0,labor
+QO3,binary,NA,A,0,labor
+QO4A,text,NA,A,0,labor
+QO4E. grader,categorical,NA,A,0,labor
+QO5. Cie,binary,NA,A,0,labor
+QO6A. Socc,text,NA,A,0,labor
+QO6E. Gradec,categorical,NA,A,0,labor
+QO7. Workhome,ordinal,NA,A,0,labor
+QO8. Worknet,binary,NA,B,0,Internet frequency
+QO10. Workuse,binary,NA,B,0,Internet frequency
+QO12. Workperf,ordinal,NA,B,0,Internet ability
+QO13,binary,1,B,0,Internet ability
+QO16,ordinal,NA,B,0,Internet ability
+QD1. yrborn,numerical,NA,A,0,age
+QD1A. Ageband,ordinal,NA,A,0,age
+QD2,binary,NA,A,0,gender
+QD3,categorical,NA,A,0,martial
+QD4,numerical,NA,A,0,adults
+QD6,numerical,NA,A,0,kids
+QD14,categorical,NA,A,0,race
+QD16,binary,NA,A,0,disability
+QD17,binary,NA,A,0,disability
+QD18,ordinal,NA,A,0,urban
+SELF COMPLETION1,ordinal,NA,A,0,income
+SELF COMPLETION2,ordinal,1,C,0,personality
+SELF COMPLETION3,ordinal,0,C,0,personality
+SELF COMPLETION4,ordinal,0,B,0,Internet engagement
