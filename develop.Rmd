@@ -11,6 +11,7 @@ library(haven)
 library(tidyverse)
 library(ggpubr)
 
+library(car)
 library(glmnet)
 
 source(here("R", "data.R"))
@@ -54,23 +55,33 @@ weights <- proc_res$weights
 
 proxies <- show_proxies(covars.data)
 
-covars.data <- covars.data %>% select(-QS2_s_wheng.NA)
+# covars.data <- covars.data %>% select(-QS2_s_wheng.NA)
 ```
 
 ``` {r}
-lasso.cv <- cv.glmnet(x = as.matrix(covars.data), y = outcome.data[, 2],
-                      weights = weights, family = 'gaussian')
-plot(lasso.cv)
+covarx_explore <- c("QC23", "QO4E_grader")
+plot.data <- data.frame(covar = NULL, covar_name = NULL,
+                        outcome = NULL, outcome_name = NULL)
+for(covar_explore in covarx_explore){
+  plot.data <- rbind(plot.data, data.frame(covar = covars.data[[covar_explore]],
+                                           covar_name = covar_explore,
+                                           outcome = outcome.data[, 1],
+                                           outcome_name = "Concern"))
+  plot.data <- rbind(plot.data, data.frame(covar = covars.data[[covar_explore]],
+                                           covar_name = covar_explore,
+                                           outcome = outcome.data[, 2],
+                                           outcome_name = "Action"))
+}
 
-lambda.cv <- lasso.cv$lambda.1se
+ggplot(plot.data, aes(x = covar, y = outcome)) +
+  geom_point(alpha = 0.1 * rep(weights, 4), shape = 16) +
+  facet_grid(covar_name ~ outcome_name) +
+  ylim(-1.5, 1.5) +
+  theme_bw()
 
-lasso.fit <- glmnet(x = as.matrix(covars.data), y = outcome.data[, 2],
-                      weights = weights, lambda = lambda.cv, family = 'gaussian')
-selected <- which(abs(lasso.fit$beta) > 1e-6)
-selected <- names(covars.data)[selected]
-
-selected.questions <- data$questions[selected]
+# ggsave(here("figs", "explore_relation.pdf"), height = 5, width = 5)
 ```
+
 
 ``` {r}
 
@@ -106,6 +117,156 @@ plot_list <- lapply(demo_questions, function(var_name){
 ggarrange(plotlist = plot_list,
           ncol = 1, nrow = length(plot_list), align = "v")
 
-# ggsave(here("figs", "demo.pdf"), height = 6, width = 9)
+# ggsave(here("figs", "explore_covar.pdf"), height = 6, width = 9)
 
+```
+
+``` {r}
+plot.attitude <- ggplot(outcome.data, aes(x = Concern)) +
+  geom_histogram(aes(y = ..density.., weight = weights), bins = 34, colour = 1, fill = "white") +
+  geom_density(lwd = 0, colour = 4,
+               fill = 4, alpha = 0.25) +
+  theme_bw()
+plot.action <- ggplot(outcome.data, aes(x = Action)) +
+  geom_histogram(aes(y = ..density.., weight = weights), bins = 8, colour = 1, fill = "white") +
+  geom_density(lwd = 0, colour = 4,
+               fill = 4, alpha = 0.25) +
+  theme_bw()
+
+ggarrange(plot.attitude, plot.action,
+          ncol = 2, nrow = 1, align = "hv")
+
+# ggsave(here("figs", "explore_outcome.pdf"), height = 3, width = 6)
+```
+
+``` {r}
+outcome_index <- 2
+
+X <- as.matrix(covars.data)
+ols.fit <- lm(outcome.data[, outcome_index] ~ X + 0, weights = weights)
+ols.coef <- ols.fit$coefficients[!is.na(ols.fit$coefficients)]
+EHW_std <- sqrt(diag(hccm(ols.fit, type = "hc1")))
+tvals <- ols.coef / EHW_std
+pvals <- 2 * pt(-abs(tvals), df = ols.fit$df.residual)
+ols.selected <- which(pvals <= 0.005)
+ols.selected <- sapply(names(ols.selected), function(name){
+  substr(name, 2, nchar(name))
+}) %>% unname()
+print(ols.selected)
+
+# plot2 <- ggplot(data.frame(fitted.values = ols.fit$fitted.values, residuals = ols.fit$residuals)) +
+#   geom_point(aes(x = fitted.values, y = residuals), alpha = 0.1 * weights) +
+#   # ylim(-1.5, 1.5) +
+#   theme_bw()
+# ggarrange(plot1, plot2, labels = c("Concern", "Action"),
+#           ncol = 2, nrow = 1, align = "hv")
+# 
+# ggsave(here("figs", "fit_vs_res.pdf"), height = 3, width = 6)
+```
+
+
+``` {r fig.width=2, fig.height=2}
+# outcome_index <- 1
+set.seed(2)
+
+lasso.cv <- cv.glmnet(x = as.matrix(covars.data), y = outcome.data[, outcome_index],
+                      weights = weights, family = 'gaussian')
+
+lambda.cv <- lasso.cv$lambda.1se
+
+lasso.fit <- glmnet(x = as.matrix(covars.data), y = outcome.data[, outcome_index],
+                    weights = weights, lambda = lambda.cv, family = 'gaussian')
+lasso.selected <- which(abs(lasso.fit$beta) > mean(abs(lasso.fit$beta[abs(lasso.fit$beta) > 1e-6])))
+# lasso.selected <- which.max(as.vector(abs(lasso.fit$beta)))
+lasso.selected <- names(covars.data)[lasso.selected]
+
+print(lasso.selected)
+
+# pdf(file = here("figs", "lasso_cv2.pdf"))
+# plot(lasso.cv)
+# dev.off()
+
+# ggsave(here("figs", "lasso_cv1.pdf"), height = 3, width = 3)
+```
+
+``` {r}
+selected <- intersect(ols.selected, lasso.selected)
+print(selected)
+```
+
+``` {r}
+covars.data.org <- covars.data
+outcome.data.org <- outcome.data
+weights.org <- weights
+n <- length(weights.org)
+
+mc_size <- 100
+
+sel_freq <- sapply(1:mc_size, function(mc_i){
+  samples <- sample(n, ceiling(n*0.8))
+  
+  covars.data <- covars.data.org[samples, ]
+  outcome.data <- outcome.data.org[samples, ]
+  weights <- weights.org[samples]
+  
+  # OLS
+  X <- as.matrix(covars.data)
+  ols.fit <- lm(outcome.data[, outcome_index] ~ X + 0, weights = weights)
+  ols.coef <- ols.fit$coefficients[!is.na(ols.fit$coefficients)]
+  EHW_std <- sqrt(diag(hccm(ols.fit, type = "hc1")))
+  tvals <- ols.coef / EHW_std
+  pvals <- 2 * pt(-abs(tvals), df = ols.fit$df.residual)
+  ols.selected <- which(pvals <= 0.005)
+  ols.selected <- sapply(names(ols.selected), function(name){
+    substr(name, 2, nchar(name))
+  }) %>% unname()
+  
+  # lasso
+  lasso.cv <- cv.glmnet(x = as.matrix(covars.data), y = outcome.data[, outcome_index],
+                        weights = weights, family = 'gaussian')
+  
+  lambda.cv <- lasso.cv$lambda.1se
+  
+  lasso.fit <- glmnet(x = as.matrix(covars.data), y = outcome.data[, outcome_index],
+                      weights = weights, lambda = lambda.cv, family = 'gaussian')
+  lasso.selected <- which(abs(lasso.fit$beta) > mean(abs(lasso.fit$beta[abs(lasso.fit$beta) > 1e-6])))
+  # lasso.selected <- which.max(as.vector(abs(lasso.fit$beta)))
+  lasso.selected <- names(covars.data)[lasso.selected]
+  
+  mc.selected <- intersect(ols.selected, lasso.selected)
+  return(selected %in% mc.selected)
+})
+
+sel_freq <- rowSums(sel_freq) / mc_size * 100
+
+data.frame(covariate = selected, frequency = sel_freq) %>%
+ggplot(aes(x = covariate, y = frequency)) +
+  geom_bar(stat="identity") +
+  geom_hline(yintercept = 50, linetype = "dashed") +
+  theme_bw() +
+  labs(y = "frequency (%)")
+
+ggsave(here("figs", "robust_action.pdf"), height = 3, width = 5)
+
+final.selected <- selected[sel_freq > 50]
+```
+
+``` {r}
+
+plot.data <- data.frame(covar = NULL, covar_name = NULL,
+                        outcome = NULL, outcome_name = NULL)
+for(covar_explore in final.selected){
+  plot.data <- rbind(plot.data, data.frame(covar = covars.data[[covar_explore]],
+                                           covar_name = covar_explore,
+                                           outcome = outcome.data[, outcome_index]))
+}
+
+ggplot(plot.data, aes(x = covar, y = outcome)) +
+  geom_point(alpha = 0.1 * rep(weights, length(final.selected)), shape = 16) +
+  facet_grid(. ~ covar_name) +
+  ylim(-1.5, 1.5) +
+  labs(y = c("Concern", "Action")[outcome_index]) +
+  theme_bw()
+
+ggsave(here("figs", "res_action.pdf"), height = 3, width = 3)
 ```

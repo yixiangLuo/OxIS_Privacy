@@ -99,11 +99,12 @@ preprocess_covars <- function(data, var_considered, reverse_order, exclude, valu
       for(subque in subques){
         cats <- unique(data.selected[[subque]])
         cats[is.na(cats)] <- "NA"
-        # include all values, still identifiable since penalty will be used
         cat_data <- data.selected[[subque]]
         cat_data[is.na(cat_data)] <- "NA"
         for(cat in cats){
-          covars.data[[paste0(subque, "-", cat)]] <- (cat_data == cat)
+          if(cat != "NA"){
+            covars.data[[paste0(subque, "-", cat)]] <- (cat_data == cat)
+          }
         }
         final_vars <- c(final_vars, subque)
       }
@@ -205,6 +206,14 @@ preprocess_data <- function(covars.data, outcome.data, weights){
   covars.data <- covars.data[not_na, ]
   outcome.data <- outcome.data[not_na, ]
   weights <- weights[not_na]
+  
+  is_outlier <- sapply(as.data.frame(outcome.data), function(outcome){
+    (outcome - mean(outcome)) / sqrt(var(outcome)) > 2
+  })
+  not_outlier <- (rowSums(is_outlier) == 0)
+  covars.data <- covars.data[not_outlier, ]
+  outcome.data <- outcome.data[not_outlier, ]
+  weights <- weights[not_outlier]
   
   covars.data <- lapply(covars.data, function(covar){
     covar[is.na(covar)] <- median(covar, na.rm = T)

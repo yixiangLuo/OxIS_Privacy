@@ -1,14 +1,14 @@
 Dependent Varialble ,Category,Type,Inverse,Description
-QB1_agcred,Attitude,ordinal (5),0,People should be concerned about protection of credit card details when they use new technologies
-QB1_agprov,Attitude,ordinal (5),0,The use of computers and the Internet is a threat to personal privacy
-QB1_agpdat,Attitude,ordinal (5),0,Companies that store and sell my personal data are a threat to my privacy
-QC41_u_ad,Attitude,ordinal (4),1,How comfortable or uncomfortable are you for companies to use information about you for targeted advertising?
-QC12_u_com_addr,Attitude,ordinal (4),1,"[Your postal address]Thinking about the INFORMATION you are sometimes asked to put online, how COMFORTABLE are you in providing the following types of information online?"
-QC12_u_comdob,Attitude,ordinal (4),1,[Your age]
-QC12_u_compho,Attitude,ordinal (4),1,[Your phone number]
-QC12_u_comcred,Attitude,ordinal (4),1,[Your credit or debit card number]
-QC12_u_compix,Attitude,ordinal (4),1,[A picture where your face is clearly visible]
-QN1_u_concom,Attitude,ordinal (5),1,[It is OK for companies to sell information about my shopping habits and purchases]Please tell me how much you agree or disagree with the following statements about some of the PROBLEMS of going online…
+QB1_agcred,Concern,ordinal (5),0,People should be concerned about protection of credit card details when they use new technologies
+QB1_agprov,Concern,ordinal (5),0,The use of computers and the Internet is a threat to personal privacy
+QB1_agpdat,Concern,ordinal (5),0,Companies that store and sell my personal data are a threat to my privacy
+QC41_u_ad,Concern,ordinal (4),1,How comfortable or uncomfortable are you for companies to use information about you for targeted advertising?
+QC12_u_com_addr,Concern,ordinal (4),1,"[Your postal address]Thinking about the INFORMATION you are sometimes asked to put online, how COMFORTABLE are you in providing the following types of information online?"
+QC12_u_comdob,Concern,ordinal (4),1,[Your age]
+QC12_u_compho,Concern,ordinal (4),1,[Your phone number]
+QC12_u_comcred,Concern,ordinal (4),1,[Your credit or debit card number]
+QC12_u_compix,Concern,ordinal (4),1,[A picture where your face is clearly visible]
+QN1_u_concom,Concern,ordinal (5),1,[It is OK for companies to sell information about my shopping habits and purchases]Please tell me how much you agree or disagree with the following statements about some of the PROBLEMS of going online…
 QR3_s_frpriv3,Action,ordinal (3),0,Check or change your privacy settings
 QC43_u_padd,Action,binary,0,"[Your contact details like your phone number]Some people keep personal data from becoming public by NOT posting it on social media or on discussion boards, or by opting out of cookies on websites. Please tell me if you have taken steps to keep the following kinds of personal data from becoming public online…"
 QC43_u_pshop,Action,binary,0,[Where you shop or what you buy]
